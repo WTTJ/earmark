@@ -1,7 +1,6 @@
 defmodule Earmark.LineScanner do
-
   @moduledoc false
-  
+
   alias Earmark.Helpers
   alias Earmark.Line
   alias Earmark.Options
@@ -99,7 +98,7 @@ defmodule Earmark.LineScanner do
       line =~ ~r/^ \s{0,3} (?:_\s?){3,} $/x ->
         %Line.Ruler{type: "_"}
 
-      match = Regex.run(~R/^(#{1,6})\s+(?|([^#]+)#*$|(.*))/u, line) ->
+      match = Regex.run(~r/^(\#{1,6})\s+(?|([^#]+)#*$|(.*))/u, line) ->
         [_, level, heading] = match
         %Line.Heading{level: String.length(level), content: String.trim(heading)}
 
@@ -161,7 +160,7 @@ defmodule Earmark.LineScanner do
           bullet: bullet,
           content: text,
           initial_indent: String.length(leading),
-          list_indent:  String.length(leading <> bullet <> spaces),
+          list_indent: String.length(leading <> bullet <> spaces)
         }
 
       match = Regex.run(~r/^(\s{0,3})(\d+\.)(\s+)(.*)/, line) ->
@@ -172,7 +171,7 @@ defmodule Earmark.LineScanner do
           bullet: bullet,
           content: text,
           initial_indent: String.length(leading),
-          list_indent:  String.length(leading <> bullet <> spaces),
+          list_indent: String.length(leading <> bullet <> spaces)
         }
 
       match = Regex.run(~r/^ \s{0,3} \| (?: [^|]+ \|)+ \s* $ /x, line) ->
@@ -192,7 +191,13 @@ defmodule Earmark.LineScanner do
 
       line =~ ~r/ \| /x && options.gfm_tables ->
         columns = split_table_columns(line)
-        %Line.TableLine{content: line, columns: columns, is_header: _determine_if_header(columns), needs_header: true}
+
+        %Line.TableLine{
+          content: line,
+          columns: columns,
+          is_header: _determine_if_header(columns),
+          needs_header: true
+        }
 
       match = Regex.run(~r/^(=|-)+\s*$/, line) ->
         [_, type] = match
@@ -207,8 +212,8 @@ defmodule Earmark.LineScanner do
       # Assuming that text lines are the most frequent would it not boost performance (which seems to be good anyway)
       # it would be great if we could come up with a regex that is a superset of all the regexen above and then
       # we could match as follows
-      #       
-      #       cond 
+      #
+      #       cond
       #       nil = Regex.run(superset, line) -> %Text
       #       ...
       #       # all other matches from above
@@ -222,12 +227,11 @@ defmodule Earmark.LineScanner do
     end
   end
 
-
-  defp _attribute_escape(string), do:
-    string
-    |> String.replace("&", "&amp;")
-    |> String.replace("<", "&lt;")
-
+  defp _attribute_escape(string),
+    do:
+      string
+      |> String.replace("&", "&amp;")
+      |> String.replace("<", "&lt;")
 
   @block_tags ~w< address article aside blockquote canvas dd div dl fieldset figcaption h1 h2 h3 h4 h5 h6 header hgroup li main nav noscript ol output p pre section table tfoot ul video>
               |> Enum.into(MapSet.new())
@@ -238,6 +242,7 @@ defmodule Earmark.LineScanner do
     columns
     |> Enum.all?(fn col -> Regex.run(@column_rgx, col) end)
   end
+
   defp split_table_columns(line) do
     line
     |> String.split(~r{(?<!\\)\|})

@@ -4,11 +4,10 @@ defmodule Earmark.Mixfile do
   @version "1.4.1"
   @url "https://github.com/pragdave/earmark"
 
-
   @deps [
     # {:credo, "~> 0.10", only: [:dev, :test]},
     # {:dialyxir, "~> 0.5", only: [:dev, :test]}
-    {:floki, "~> 0.21", only: [:dev, :test]},
+    {:floki, "~> 0.21", only: [:dev, :test]}
   ]
 
   @description """
@@ -33,7 +32,8 @@ defmodule Earmark.Mixfile do
       deps: @deps,
       description: @description,
       package: package(),
-      aliases: [docs: &build_docs/1, readme: &readme/1]
+      aliases: [docs: &build_docs/1, readme: &readme/1],
+      xref: [exclude: [Floki]]
     ]
   end
 
@@ -79,8 +79,8 @@ defmodule Earmark.Mixfile do
   """
   defp build_docs(_) do
     Mix.Task.run("compile")
-    ex_doc = Path.join(Mix.Local.path_for(:escript), "ex_doc")
-    Mix.shell.info("Using escript: #{ex_doc} to build the docs")
+    ex_doc = Path.join(Mix.path_for(:escript), "ex_doc")
+    Mix.shell().info("Using escript: #{ex_doc} to build the docs")
 
     unless File.exists?(ex_doc) do
       raise "cannot build docs because escript for ex_doc is not installed, make sure to \n#{@prerequisites}"
@@ -89,13 +89,13 @@ defmodule Earmark.Mixfile do
     args = ["Earmark", @version, Mix.Project.compile_path()]
     opts = ~w[--main Earmark --source-ref v#{@version} --source-url #{@url}]
 
-    Mix.shell.info("Running: #{ex_doc} #{inspect(args ++ opts)}")
+    Mix.shell().info("Running: #{ex_doc} #{inspect(args ++ opts)}")
     System.cmd(ex_doc, args ++ opts)
-    Mix.shell.info("Docs built successfully")
+    Mix.shell().info("Docs built successfully")
   end
 
   defp readme(args) do
-    Code.load_file("tasks/readme.exs")
+    Code.require_file("tasks/readme.exs")
     Mix.Tasks.Readme.run(args)
   end
 end
